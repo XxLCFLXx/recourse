@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: unit tests
+        run: python tests.py
+
+      - name: record checker self-test
+        run: python appeal_check.py
+
+      # 内置演示是一个"该被卡住"的系统，所以 exit=2 才是对的。
+      # 如果它某天 exit=0，说明判定逻辑塌了。
+      - name: conformance demo must be NON_APPEALABLE
+        shell: bash
+        run: |
+          set +e
+          python conformance.py
+          code=$?
+          echo "exit=$code (expect 2 = NON_APPEALABLE)"
+          test "$code" -eq 2
