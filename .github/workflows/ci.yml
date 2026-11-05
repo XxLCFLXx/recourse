@@ -4,6 +4,12 @@ on:
   push:
   pull_request:
 
+# Windows 的默认控制台编码是 cp1252，脚本里的中文会直接 UnicodeEncodeError。
+# 这两行是最容易被忽略、又最必要的一段。
+env:
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: utf-8
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
